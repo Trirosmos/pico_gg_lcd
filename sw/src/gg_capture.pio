@@ -1,0 +1,63 @@
+.define dw 20 ;Vsync
+.define cl2  21; ;Hsync
+.define clk 22 ;Pixel clock
+
+.program detect_vblank
+.side_set 1 opt
+.wrap_target
+    wait 0 gpio dw ;Wait for frame start
+		wait 1 gpio dw
+		irq set 0 ;Notify SM 1
+.wrap
+
+.program detect_hblank
+.side_set 1 opt
+.wrap_target
+;OSR stores how many scanlines to capture
+		mov x, osr side 0
+		wait 1 irq 0
+
+loop_scanline:
+		;Scanline starts when cl2 goes low
+		;But we wait for the rising edge instead and count pixel clocks before generating an IRQ
+		;This is so the next SM has a head start and can capture the very first pixel in a scanline correctly
+    wait 1 gpio cl2 side 1 
+
+		;CL2 pulse seems to last for 6 pixel clocks
+		;Don't ask me why 4 works here
+		set y, 4
+
+wait_cycles:
+		wait 0 gpio clk
+		wait 1 gpio clk
+		jmp y-- wait_cycles 
+
+		irq set 1 ;Let SM 2 know it can start capturing pixel data
+		wait 0 gpio cl2
+		jmp x-- loop_scanline
+.wrap
+
+.program get_data
+.side_set 1 opt
+.wrap_target
+;OSR contains stores the scanline pixel count
+	mov x, osr
+	wait 1 irq 1
+
+capture_pixels:
+	set y, 2 side 0
+inner_loop:
+	wait 1 gpio clk ;Data presumably gets put on the pixel bus during this cycle
+	wait 0 gpio clk
+
+	wait 1 gpio clk ;Then it can be latched in the next
+	in pins, 4
+	wait 0 gpio clk
+
+	jmp y-- inner_loop
+
+	push ;12 LSBs contain pixel data
+
+	jmp x-- capture_pixels
+	nop side 1
+.wrap
