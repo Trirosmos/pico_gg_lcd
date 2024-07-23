@@ -1,0 +1,8 @@
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
+D1,D_Schottky,D_SOD-123,131.75,-102.4,0.0,top
+D2,D_Schottky,D_A-405_P7.62mm_Horizontal,129.09,-105.3,0.0,top
+J14,Conn_01x60,FPC_60_Adapter,147.59,-100.67,0.0,top
+J17,Conn_02x06_Odd_Even,PinSocket_2x06_P2.54mm_Horizontal,116.175,-77.175,-90.0,top
+Q1,NMOS,TO-92,124.8,-94.41,0.0,top
+R3,10k,R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal,113.1,-94.34,90.0,top
+U1,ChinaPico,RPi_Pico_SMD_TH,154.495,-78.01,90.0,top

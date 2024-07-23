@@ -122,6 +122,7 @@ void printFramebuffer() {
 
 uint32_t pot_history[16];
 uint32_t brightness = 0;
+uint32_t scanlines_to_skip = 8;
 
 __attribute__((long_call, section(".data"))) void update_lcd() {	
 	//while(1) {
@@ -137,6 +138,10 @@ __attribute__((long_call, section(".data"))) void update_lcd() {
 	brightness = avg;
 	brightness &= 0b11110000; //LSBs have too much noise
 
+	uint32_t is_gg = !gpio_get(15);
+
+	scanlines_to_skip = is_gg ? 1 : 11;
+
 	//Wait for frame to start being captured into the framebuffer
 	while(!dma_channel_is_busy(0)) 
 		;
@@ -144,7 +149,7 @@ __attribute__((long_call, section(".data"))) void update_lcd() {
 	//Transfering the entire framebuffer to the LCD takes 13-14-ish ms
 	//Thus, we need to give the PIO filling the framebuffer a bit of a head start
 	//Wait for the first 40 scanlines of active area to be filled before starting LCD update
-	while(dma_hw->ch[0].transfer_count > (262 - 11 - 40) * 192)
+	while(dma_hw->ch[0].transfer_count > (262 - scanlines_to_skip - 40) * 192)
 		;
 
 	select_lcd();
@@ -172,21 +177,26 @@ __attribute__((long_call, section(".data"))) void update_lcd() {
 
 	write_command(0x2C);
 
-	uint32_t line_counter = 0;
-	uint32_t base = pixel_amount + 44;
+	pio_sm_put_blocking(pio0, 1, 192 + scanlines_to_skip + 3);
+	pio_sm_exec(pio0, 1, pio_encode_pull(false, true));
 
-	for (uint32_t y = 0; y < 320 * 256; y += 155)
+	dma_hw->ch[2].transfer_count = pixels_a_capturar * scanlines_to_skip;
+
+	uint32_t line_counter = 0;
+	uint32_t base = pixels_a_capturar + 44 + (is_gg ? 44 : 0);
+
+	for (uint32_t y = 0; y < 320 * 256; y += is_gg ? 114 : 155)
 	{
 		if (line_counter >= 320)
 			break;
 		uint32_t pix_counter = 0;
 		uint32_t y_base = base + (y >> 8) * pixel_amount;
 
-		for (uint32_t x = 0; x < 480 * 8; x += 4)
+		for (uint32_t x = 0; x < 480 * 64; x += is_gg ? 21 : 32)
 		{
 			if (pix_counter >= 480)
 				break;
-			uint32_t pixIndex = y_base + (x >> 3);
+			uint32_t pixIndex = y_base + (x >> 6);
 
 			write_data_fast((framebuffer[pixIndex] & 15) << 4);
 			write_data_fast(((framebuffer[pixIndex] >> 4) & 15) << 4);
@@ -383,7 +393,7 @@ int main() {
 	pio_sm_init(pio0, 1, detect_hblank, &detect_hblank_config);
 	pio_sm_init(pio0, 2, get_data, &get_data_config);
 
-	pio_sm_put_blocking(pio0, 1, 192 + 11 + 3);
+	pio_sm_put_blocking(pio0, 1, 192 + scanlines_to_skip + 3);
 	pio_sm_exec(pio0, 1, pio_encode_pull(false, true));
 
 	/*pio_sm_put_blocking(pio0, 2, 47 * 3 * 2); //Pixels a ignorar * número de canais * 2 clocks por canal
@@ -408,7 +418,7 @@ int main() {
 			&g,
 			&dummy,
 			&pio0_hw->rxf[2],
-			pixel_amount * 11,
+			pixel_amount * scanlines_to_skip,
 			true);
 
 	dma_channel_config f = dma_channel_get_default_config(0);
