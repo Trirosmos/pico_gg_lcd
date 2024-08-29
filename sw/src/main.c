@@ -28,13 +28,6 @@
 
 uint16_t * framebuffer = (uint16_t *)(0x20000000 + (1024 * 64));
 
-/*static inline __attribute__((always_inline)) uint8_t reverse(uint8_t b) {
-   b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-   b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-   b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-   return b;
-}*/
-
 static inline __attribute__((always_inline)) void wait() {
 	asm volatile("nop");
 	asm volatile("nop");
@@ -90,27 +83,6 @@ static inline __attribute__((always_inline)) void write_data_fast(uint8_t pix_da
 	pio_sm_put(pio1, 0, pix_data);
 }
 
-/*__attribute__((long_call, section(".data"))) uint8_t read_data() {
-	uint8_t data;
-
-	gpio_set_dir_in_masked(0xFF);
-
-	gpio_put(lcd_dcx, 1);
-	gpio_put(lcd_wr, 1);
-
-	gpio_put(lcd_rd, 0);
-
-	for (uint32_t w = 0; w < 40; w++) {
-		wait();
-	}
-
-	gpio_put(lcd_rd, 1);
-
-	data = gpio_get_all() & 255;
-
-	return reverse(data);
-}*/
-
 void printFramebuffer() {
 	for (uint32_t y = 0; y < 192; y++) {
 		for (uint32_t x = 0; x < 256; x++) {
@@ -125,7 +97,6 @@ uint32_t brightness = 0;
 uint32_t scanlines_to_skip = 8;
 
 __attribute__((long_call, section(".data"))) void update_lcd() {	
-	//while(1) {
 	uint32_t avg = 0;
 	for (uint32_t c = 15; c > 0; c--)
 	{
@@ -180,10 +151,10 @@ __attribute__((long_call, section(".data"))) void update_lcd() {
 	pio_sm_put_blocking(pio0, 1, 192 + scanlines_to_skip + 3);
 	pio_sm_exec(pio0, 1, pio_encode_pull(false, true));
 
-	dma_hw->ch[2].transfer_count = pixels_a_capturar * scanlines_to_skip;
+	dma_hw->ch[2].transfer_count = pixel_amount * scanlines_to_skip;
 
 	uint32_t line_counter = 0;
-	uint32_t base = pixels_a_capturar + 44 + (is_gg ? 44 : 0);
+	uint32_t base = pixel_amount + 44 + (is_gg ? 44 : 0);
 
 	for (uint32_t y = 0; y < 320 * 256; y += is_gg ? 114 : 155)
 	{
@@ -210,7 +181,6 @@ __attribute__((long_call, section(".data"))) void update_lcd() {
 		}
 
 		deselect_lcd();
-	//}
 }
 
 void init_lcd() {
@@ -396,10 +366,6 @@ int main() {
 	pio_sm_put_blocking(pio0, 1, 192 + scanlines_to_skip + 3);
 	pio_sm_exec(pio0, 1, pio_encode_pull(false, true));
 
-	/*pio_sm_put_blocking(pio0, 2, 47 * 3 * 2); //Pixels a ignorar * número de canais * 2 clocks por canal
-	pio_sm_exec(pio0, 2, pio_encode_pull(false, true));
-	pio_sm_exec(pio0, 2, pio_encode_mov(pio_isr, pio_osr));*/
-
 	pio_sm_put_blocking(pio0, 2, pixel_amount - 1); //Pixels to capture
 	pio_sm_exec(pio0, 2, pio_encode_pull(false, true));
 
@@ -462,20 +428,13 @@ int main() {
 	uint8_t comando;
 
 	while(1) {
-		//comando = getchar();
-
 		init_lcd();
 
-		//interpret_command(comando, &state);
 		while(1) {
 			uint32_t comeco = time_us_32();
 			update_lcd();
 			uint32_t fim = time_us_32();
-			//printf("Brilho é %i; ", brightness);
-			//printf("Frame anterior levou %i us\n", fim - comeco);
 		}
-
-		//printFramebuffer();
 	}
 
 	return 0;
