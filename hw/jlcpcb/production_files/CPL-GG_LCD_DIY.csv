@@ -1,0 +1,13 @@
+Designator,Val,Package,Mid X,Mid Y,Rotation,Layer
+C1,100n,C_0805_2012Metric,160.9,-101.7,90.0,top
+C2,100u,C_0805_2012Metric,138.3,-98.45,90.0,top
+C3,22u,C_0805_2012Metric,134.0,-98.45,90.0,top
+D1,D_Schottky,D_SOD-123,177.15,-100.1,0.0,top
+D3,D,D_SOD-123,156.6,-99.05,90.0,top
+J14,Conn_01x60,FPC_60_Adapter,147.59,-108.63,180.0,top
+J17,Conn_02x06_Odd_Even,PinSocket_2x06_P2.54mm_Horizontal,116.15,-78.53,0.0,top
+L1,470u,L_Axial_L5.3mm_D2.2mm_P7.62mm_Horizontal_Vishay_IM-1,148.4,-99.0,90.0,top
+Q2,2N2222,TO-92,174.665,-93.77,90.0,top
+R1,100k,R_0805_2012Metric,165.0,-99.5125,90.0,top
+R2,10k,R_0805_2012Metric,170.0,-102.0125,-90.0,top
+U1,ChinaPico,RPi_Pico_SMD_TH,155.035,-78.01,90.0,top

@@ -3,32 +3,11 @@
 .define clk 22 ;Pixel clock
 
 .program lcd_send
-.side_set 3 opt
+.side_set 1 opt
 .wrap_target
-	pull side 0b111
-	mov osr, ::osr
-	out null, 24
-	out pins, 8 side 0b101
-.wrap
+	pull side 0
 
-.program fast_pix
-.side_set 3 opt
-.wrap_target
-	set x,2
-	pull
-	mov osr, ::osr
-	out null, 20
-
-
-loop_data:
-	mov isr, osr side 0b111
-	;in null, 0
-	mov osr, isr
-	out pins, 4 
-	set y, 10
-
-wait_data:
-	jmp y-- wait_data side 0b101
-
-	jmp x-- loop_data
+	out pins, 4
+	nop side 1
+	nop side 0
 .wrap
