@@ -17,6 +17,7 @@ git submodule update --init --recursive
 Then, run `sw/build.sh`:
 
 ```Bash
+cd sw
 mkdir build
 cd build
 cmake ../CMakeLists.txt
