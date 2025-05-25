@@ -30,9 +30,9 @@ This should generate an uf2 file you can upload to the RP2040;
 Componentes you'll need and their approximate cost:
 
 - Pico GG LCD PCB ($5)
-- [PMOD HDMI adapter board](aliexpress.com/w/wholesale-pmod%2525252dhdmi.html?spm=a2g0o.detail.search.0) ($4) 
-- [54-pin FPC connector adapter board](aliexpress.com/item/32827105259.html) ($2)
-- [LQ035NC111 LCD module](aliexpress.com/w/wholesale-LQ035NC111.html?spm=a2g0o.home.search.0) ($10)
+- [PMOD HDMI adapter board](https://aliexpress.com/w/wholesale-pmod%2525252dhdmi.html?spm=a2g0o.detail.search.0) ($4) 
+- [54-pin FPC connector adapter board](https://aliexpress.com/item/32827105259.html) ($2)
+- [LQ035NC111 LCD module](https://aliexpress.com/w/wholesale-LQ035NC111.html?spm=a2g0o.home.search.0) ($10)
 - [RP2040 board that exposes all 30 GPIOs](https://aliexpress.com/item/1005003796653297.html) ($4)
 - BS170 or similar NMOSFET ($0.3)
 - ~470uH axial THT inductor ($0.2)
